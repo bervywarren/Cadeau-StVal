@@ -1,294 +1,684 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Un message rien que pour toi</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500;1,600&family=Jost:wght@300;400;500&family=Pinyon+Script&display=swap" rel="stylesheet">
-<style>
-/* Jetons de couleur : thème clair par défaut */
-:root{
-  --fond1:#fff3f0; --fond2:#f9c9d3; --texte:#4a1230; --rose:#c2185b; --or:#a8731f;
-  --verre:rgba(255,255,255,.62); --trait:rgba(194,24,91,.28);
-  box-sizing:border-box;
-  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --fond1:#1d0715; --fond2:#4a0f2e; --texte:#ffe9ef; --rose:#ff6b9a; --or:#f1cf9a;
-    --verre:rgba(255,255,255,.06); --trait:rgba(255,160,190,.25);
-  }
-}
-:root[data-theme="dark"]{
-  --fond1:#1d0715; --fond2:#4a0f2e; --texte:#ffe9ef; --rose:#ff6b9a; --or:#f1cf9a;
-  --verre:rgba(255,255,255,.06); --trait:rgba(255,160,190,.25);
-}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-*{box-sizing:border-box}
-body{
-  margin:0; min-height:100vh; color:var(--texte); font-family:"Jost",system-ui,sans-serif; font-weight:300;
-  background:var(--fond1); display:flex; align-items:center; justify-content:center; padding:22px; overflow-x:hidden;
-}
-/* Halo qui suit le doigt ou la souris */
-body::before{
-  content:""; position:fixed; inset:0; pointer-events:none;
-  background:radial-gradient(520px circle at var(--x,50%) var(--y,20%),color-mix(in srgb,var(--rose) 28%,transparent),transparent 70%),
-             radial-gradient(900px circle at 50% 110%,var(--fond2),transparent 70%);
-  transition:background .3s;
-}
-#petales{position:fixed; inset:0; pointer-events:none; overflow:hidden}
-.petale{position:absolute; top:-40px; fill:var(--rose); opacity:0; animation:tombe linear forwards}
-.petale.or{fill:var(--or)}
-@keyframes tombe{
-  0%{transform:translate(0,0) rotate(0deg); opacity:0}
-  10%{opacity:.6}
-  100%{transform:translate(var(--dx),112vh) rotate(var(--rot)); opacity:0}
-}
-main{position:relative; width:100%; max-width:600px}
-.vue{
-  display:none; text-align:center; padding:42px 26px 36px; border-radius:32px;
-  background:var(--verre); border:1px solid var(--trait); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
-  box-shadow:0 30px 80px -30px color-mix(in srgb,var(--rose) 55%,transparent);
-}
-.vue.actif{display:block; animation:entree .9s cubic-bezier(.2,.7,.2,1) both}
-@keyframes entree{from{opacity:0; transform:translateY(18px) scale(.98); filter:blur(8px)} to{opacity:1; transform:none; filter:blur(0)}}
-h1{font-family:"Pinyon Script","Snell Roundhand",cursive; font-weight:400; font-size:clamp(2.6rem,10vw,4rem); line-height:1.1; margin:0 0 6px; color:var(--rose)}
-.intro{font-family:"Cormorant Garamond",Georgia,serif; font-style:italic; font-size:1.3rem; margin:0 0 26px; opacity:.85}
-label{display:block; font-size:.95rem; margin:0 0 8px}
-input{
-  width:100%; font:inherit; font-size:1.25rem; text-align:center; color:inherit; padding:15px 18px; margin-bottom:22px;
-  background:transparent; border:0; border-bottom:2px solid var(--trait); border-radius:0; transition:border-color .3s;
-}
-input:focus{outline:none; border-color:var(--rose)}
-.choix{display:flex; flex-wrap:wrap; gap:9px; justify-content:center; margin-bottom:28px}
-.choix button{
-  font:inherit; font-size:.95rem; color:var(--texte); background:transparent; border:1px solid var(--trait);
-  border-radius:999px; padding:9px 16px; cursor:pointer; transition:all .25s;
-}
-.choix button:hover{border-color:var(--rose); transform:translateY(-2px)}
-.choix button[aria-pressed="true"]{color:#fff; border-color:transparent; background:linear-gradient(135deg,var(--rose),#ff9ab8); box-shadow:0 8px 22px -8px var(--rose)}
-.principal{
-  font:inherit; font-weight:500; font-size:1.1rem; color:#fff; border:0; border-radius:999px; padding:15px 38px; cursor:pointer;
-  background:linear-gradient(135deg,var(--rose),#ff9ab8); box-shadow:0 14px 32px -10px var(--rose); transition:transform .25s, box-shadow .25s;
-}
-.principal:hover{transform:translateY(-3px) scale(1.03)}
-.discret{
-  font:inherit; font-size:.95rem; color:var(--texte); background:transparent; border:1px solid var(--trait);
-  border-radius:999px; padding:10px 20px; margin:5px; cursor:pointer; transition:border-color .25s;
-}
-.discret:hover{border-color:var(--rose)}
-button:focus-visible,input:focus-visible{outline:3px solid var(--or); outline-offset:3px}
-.nom{font-family:"Pinyon Script",cursive; font-size:clamp(3.6rem,17vw,6.4rem); line-height:1.05; color:var(--rose); margin:0; text-shadow:0 0 40px color-mix(in srgb,var(--rose) 55%,transparent); animation:revele 1.8s cubic-bezier(.2,.7,.2,1) both}
-@keyframes revele{from{opacity:0; letter-spacing:.35em; filter:blur(14px)} to{opacity:1; letter-spacing:0; filter:blur(0)}}
-.orne{width:150px; height:22px; margin:6px auto 18px; display:block; stroke:var(--or); fill:var(--or); opacity:0; animation:apparait 1s .9s ease forwards}
-.message{font-family:"Cormorant Garamond",Georgia,serif; font-style:italic; font-weight:500; font-size:clamp(1.3rem,4.6vw,1.65rem); line-height:1.65; margin:0 0 22px}
-.mot{opacity:0; display:inline-block; margin-right:.26em; animation:apparait .8s ease forwards}
-@keyframes apparait{from{opacity:0; transform:translateY(10px); filter:blur(6px)} to{opacity:1; transform:none; filter:blur(0)}}
-.signature{font-family:"Pinyon Script",cursive; font-size:2rem; color:var(--or); margin-bottom:24px; opacity:0; animation:apparait 1.2s ease forwards}
-@media (prefers-reduced-motion: reduce){
-  .petale{display:none}
-  .vue.actif,.nom,.orne,.mot,.signature{animation:none; opacity:1; filter:none}
-}
-</style>
-</head>
-<body>
-<div id="petales" aria-hidden="true"></div>
-<main>
-  <section class="vue actif" id="saisie">
-    <h1>Joyeuse Saint-Valentin</h1>
-    <p class="intro">Un message écrit rien que pour toi.</p>
-    <label for="prenom">Ton prénom</label>
-    <input id="prenom" type="text" maxlength="30" placeholder="Par exemple : Warren" autocomplete="off">
-    <p style="margin:0 0 12px">Qui est cette personne pour toi ?</p>
-    <div class="choix" id="choix" role="group" aria-label="Relation"></div>
-    <button class="principal" id="reveler" type="button">Découvrir mon message</button>
-  </section>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Un message rien que pour toi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500;1,600&family=Jost:wght@300;400;500&family=Pinyon+Script&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Jetons de couleur : thème clair par défaut */
+      :root {
+        --fond1: #fff3f0;
+        --fond2: #f9c9d3;
+        --texte: #4a1230;
+        --rose: #c2185b;
+        --or: #a8731f;
+        --verre: rgba(255, 255, 255, 0.62);
+        --trait: rgba(194, 24, 91, 0.28);
+        box-sizing: border-box;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --fond1: #1d0715;
+          --fond2: #4a0f2e;
+          --texte: #ffe9ef;
+          --rose: #ff6b9a;
+          --or: #f1cf9a;
+          --verre: rgba(255, 255, 255, 0.06);
+          --trait: rgba(255, 160, 190, 0.25);
+        }
+      }
+      :root[data-theme="dark"] {
+        --fond1: #1d0715;
+        --fond2: #4a0f2e;
+        --texte: #ffe9ef;
+        --rose: #ff6b9a;
+        --or: #f1cf9a;
+        --verre: rgba(255, 255, 255, 0.06);
+        --trait: rgba(255, 160, 190, 0.25);
+      }
+      html {
+        scroll-padding-top: env(safe-area-inset-top, 0px);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--texte);
+        font-family: "Jost", system-ui, sans-serif;
+        font-weight: 300;
+        background: var(--fond1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 22px;
+        overflow-x: hidden;
+      }
+      /* Halo qui suit le doigt ou la souris */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+          radial-gradient(
+            520px circle at var(--x, 50%) var(--y, 20%),
+            color-mix(in srgb, var(--rose) 28%, transparent),
+            transparent 70%
+          ),
+          radial-gradient(
+            900px circle at 50% 110%,
+            var(--fond2),
+            transparent 70%
+          );
+        transition: background 0.3s;
+      }
+      #petales {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+      .petale {
+        position: absolute;
+        top: -40px;
+        fill: var(--rose);
+        opacity: 0;
+        animation: tombe linear forwards;
+      }
+      .petale.or {
+        fill: var(--or);
+      }
+      @keyframes tombe {
+        0% {
+          transform: translate(0, 0) rotate(0deg);
+          opacity: 0;
+        }
+        10% {
+          opacity: 0.6;
+        }
+        100% {
+          transform: translate(var(--dx), 112vh) rotate(var(--rot));
+          opacity: 0;
+        }
+      }
+      main {
+        position: relative;
+        width: 100%;
+        max-width: 600px;
+      }
+      .vue {
+        display: none;
+        text-align: center;
+        padding: 42px 26px 36px;
+        border-radius: 32px;
+        background: var(--verre);
+        border: 1px solid var(--trait);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        box-shadow: 0 30px 80px -30px
+          color-mix(in srgb, var(--rose) 55%, transparent);
+      }
+      .vue.actif {
+        display: block;
+        animation: entree 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+      }
+      @keyframes entree {
+        from {
+          opacity: 0;
+          transform: translateY(18px) scale(0.98);
+          filter: blur(8px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+          filter: blur(0);
+        }
+      }
+      h1 {
+        font-family: "Pinyon Script", "Snell Roundhand", cursive;
+        font-weight: 400;
+        font-size: clamp(2.6rem, 10vw, 4rem);
+        line-height: 1.1;
+        margin: 0 0 6px;
+        color: var(--rose);
+      }
+      .intro {
+        font-family: "Cormorant Garamond", Georgia, serif;
+        font-style: italic;
+        font-size: 1.3rem;
+        margin: 0 0 26px;
+        opacity: 0.85;
+      }
+      label {
+        display: block;
+        font-size: 0.95rem;
+        margin: 0 0 8px;
+      }
+      input {
+        width: 100%;
+        font: inherit;
+        font-size: 1.25rem;
+        text-align: center;
+        color: inherit;
+        padding: 15px 18px;
+        margin-bottom: 22px;
+        background: transparent;
+        border: 0;
+        border-bottom: 2px solid var(--trait);
+        border-radius: 0;
+        transition: border-color 0.3s;
+      }
+      input:focus {
+        outline: none;
+        border-color: var(--rose);
+      }
+      .choix {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+        justify-content: center;
+        margin-bottom: 28px;
+      }
+      .choix button {
+        font: inherit;
+        font-size: 0.95rem;
+        color: var(--texte);
+        background: transparent;
+        border: 1px solid var(--trait);
+        border-radius: 999px;
+        padding: 9px 16px;
+        cursor: pointer;
+        transition: all 0.25s;
+      }
+      .choix button:hover {
+        border-color: var(--rose);
+        transform: translateY(-2px);
+      }
+      .choix button[aria-pressed="true"] {
+        color: #fff;
+        border-color: transparent;
+        background: linear-gradient(135deg, var(--rose), #ff9ab8);
+        box-shadow: 0 8px 22px -8px var(--rose);
+      }
+      .principal {
+        font: inherit;
+        font-weight: 500;
+        font-size: 1.1rem;
+        color: #fff;
+        border: 0;
+        border-radius: 999px;
+        padding: 15px 38px;
+        cursor: pointer;
+        background: linear-gradient(135deg, var(--rose), #ff9ab8);
+        box-shadow: 0 14px 32px -10px var(--rose);
+        transition:
+          transform 0.25s,
+          box-shadow 0.25s;
+      }
+      .principal:hover {
+        transform: translateY(-3px) scale(1.03);
+      }
+      .discret {
+        font: inherit;
+        font-size: 0.95rem;
+        color: var(--texte);
+        background: transparent;
+        border: 1px solid var(--trait);
+        border-radius: 999px;
+        padding: 10px 20px;
+        margin: 5px;
+        cursor: pointer;
+        transition: border-color 0.25s;
+      }
+      .discret:hover {
+        border-color: var(--rose);
+      }
+      button:focus-visible,
+      input:focus-visible {
+        outline: 3px solid var(--or);
+        outline-offset: 3px;
+      }
+      .nom {
+        font-family: "Pinyon Script", cursive;
+        font-size: clamp(3.6rem, 17vw, 6.4rem);
+        line-height: 1.05;
+        color: var(--rose);
+        margin: 0;
+        text-shadow: 0 0 40px color-mix(in srgb, var(--rose) 55%, transparent);
+        animation: revele 1.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+      }
+      @keyframes revele {
+        from {
+          opacity: 0;
+          letter-spacing: 0.35em;
+          filter: blur(14px);
+        }
+        to {
+          opacity: 1;
+          letter-spacing: 0;
+          filter: blur(0);
+        }
+      }
+      .orne {
+        width: 150px;
+        height: 22px;
+        margin: 6px auto 18px;
+        display: block;
+        stroke: var(--or);
+        fill: var(--or);
+        opacity: 0;
+        animation: apparait 1s 0.9s ease forwards;
+      }
+      .message {
+        font-family: "Cormorant Garamond", Georgia, serif;
+        font-style: italic;
+        font-weight: 500;
+        font-size: clamp(1.3rem, 4.6vw, 1.65rem);
+        line-height: 1.65;
+        margin: 0 0 22px;
+      }
+      .mot {
+        opacity: 0;
+        display: inline-block;
+        margin-right: 0.26em;
+        animation: apparait 0.8s ease forwards;
+      }
+      @keyframes apparait {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+          filter: blur(6px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+          filter: blur(0);
+        }
+      }
+      .signature {
+        font-family: "Pinyon Script", cursive;
+        font-size: 2rem;
+        color: var(--or);
+        margin-bottom: 24px;
+        opacity: 0;
+        animation: apparait 1.2s ease forwards;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .petale {
+          display: none;
+        }
+        .vue.actif,
+        .nom,
+        .orne,
+        .mot,
+        .signature {
+          animation: none;
+          opacity: 1;
+          filter: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="petales" aria-hidden="true"></div>
+    <main>
+      <section class="vue actif" id="saisie">
+        <h1>Joyeuse Saint-Valentin</h1>
+        <p class="intro">Un message écrit rien que pour toi.</p>
+        <label for="prenom">Ton prénom</label>
+        <input
+          id="prenom"
+          type="text"
+          maxlength="30"
+          placeholder="Par exemple : Warren"
+          autocomplete="off"
+        />
+        <p style="margin: 0 0 12px">Qui est cette personne pour toi ?</p>
+        <div class="choix" id="choix" role="group" aria-label="Relation"></div>
+        <button class="principal" id="reveler" type="button">
+          Découvrir mon message
+        </button>
+      </section>
 
-  <section class="vue" id="resultat" aria-live="polite">
-    <p class="nom" id="nom"></p>
-    <svg class="orne" viewBox="0 0 150 22" aria-hidden="true">
-      <path d="M2 11h58M90 11h58" fill="none" stroke-width="1"/>
-      <path d="M75 19s-9-5.500-11.500-11C62 4.500 64.500 2 67.500 2c2.700 0 5 1.500 7.500 4 2.500-2.500 4.800-4 7.500-4 3 0 5.500 2.500 4 6-2.500 5.500-11.500 11-11.500 11z" stroke="none"/>
-    </svg>
-    <p class="message" id="message"></p>
-    <div class="signature" id="signature"></div>
-    <div>
-      <button class="discret" id="autre" type="button">Un autre message</button>
-      <button class="discret" id="partager" type="button">Partager ce cadeau</button>
-      <button class="discret" id="retour" type="button">Changer de prénom</button>
-    </div>
-  </section>
-</main>
+      <section class="vue" id="resultat" aria-live="polite">
+        <p class="nom" id="nom"></p>
+        <svg class="orne" viewBox="0 0 150 22" aria-hidden="true">
+          <path d="M2 11h58M90 11h58" fill="none" stroke-width="1" />
+          <path
+            d="M75 19s-9-5.500-11.500-11C62 4.500 64.500 2 67.500 2c2.700 0 5 1.500 7.500 4 2.500-2.500 4.800-4 7.500-4 3 0 5.500 2.500 4 6-2.500 5.500-11.500 11-11.500 11z"
+            stroke="none"
+          />
+        </svg>
+        <p class="message" id="message"></p>
+        <div class="signature" id="signature"></div>
+        <div>
+          <button class="discret" id="autre" type="button">
+            Un autre message
+          </button>
+          <button class="discret" id="partager" type="button">
+            Partager ce cadeau
+          </button>
+          <button class="discret" id="retour" type="button">
+            Changer de prénom
+          </button>
+        </div>
+      </section>
+    </main>
 
-<script>
-// Libellés des relations affichés sur les boutons, dans l'ordre
-var RELATIONS = [
-  ["amour","Mon amour"],["copine","Ma copine"],["copain","Mon copain"],["crush","Mon secret"],
-  ["mere","Ma mère"],["pere","Mon père"],["fille","Ma fille"],["fils","Mon fils"],
-  ["frere","Mon frère"],["soeur","Ma sœur"],["grandparent","Grand-parent"],["ex","Mon ex"],
-  ["ami","Ami ou amie"],["collegue","Collègue"],["famille","Famille"]
-];
-// Messages par relation : s = signature, m = liste de messages ({n} devient le prénom)
-var MESSAGES = {
-  amour:{s:"Avec tout mon amour, Bervy Warren",m:[
-    "{n}, il y a des personnes qui traversent la vie, et il y a toi, qui l’as transformée. Merci d’être ma lumière quand tout s’assombrit et mon sourire quand tout va bien.",
-    "Si l’amour avait un visage, {n}, ce serait le tien. Chaque jour à tes côtés est une promesse tenue, et je t’aimerai encore demain, plus fort qu’aujourd’hui.",
-    "{n}, je ne cherche plus ailleurs : tout ce dont mon cœur rêvait, il l’a trouvé en toi. Tu es ma maison, mon calme et ma plus belle aventure."]},
-  copine:{s:"Pour toi, Bervy Warren",m:[
-    "{n}, ma douce, tu fais fleurir les jours les plus gris. Près de toi, je deviens la meilleure version de moi-même. Merci d’être celle que tu es.",
-    "Tes rires sont ma musique préférée, {n}. Aujourd’hui, je veux simplement te dire que tu es précieuse, belle et infiniment aimée.",
-    "{n}, parmi tous les hasards de la vie, tu es le plus beau. Je choisirai toujours ton sourire, ta voix et ta main dans la mienne."]},
-  copain:{s:"Pour toi, Bervy Warren",m:[
-    "{n}, mon repère, mon complice, mon plus beau pari. Avec toi, l’avenir fait moins peur et tout devient possible. Je t’aime.",
-    "Merci, {n}, pour ta patience, ta tendresse et ces petits gestes qui disent tout. Tu es la preuve que l’amour se cache dans les détails.",
-    "{n}, si je devais recommencer ma vie, je referais chaque chemin qui m’a mené à toi. Joyeuse Saint-Valentin, mon amour."]},
-  crush:{s:"Avec sincérité, Bervy Warren",m:[
-    "{n}, il y a des sentiments qu’on n’ose pas dire, et pourtant ils grandissent en silence. Les tiens font battre mon cœur un peu plus vite.",
-    "Peut-être que le courage, c’est simplement de te l’avouer : {n}, tu comptes pour moi plus que tu ne l’imagines.",
-    "{n}, ton sourire illumine mes journées sans que tu le saches. Si tu le veux, écrivons la suite ensemble, doucement."]},
-  mere:{s:"Ton enfant qui t’aime, Bervy Warren",m:[
-    "{n}, maman, ton amour est le premier que j’ai connu et le plus pur. Merci pour tes prières, tes sacrifices et ta douceur. Je t’aime de tout mon cœur.",
-    "Il n’existe pas de mots assez grands pour te dire merci, {n}. Tu as été mon refuge, mon courage et ma plus belle leçon d’amour.",
-    "{n}, chaque réussite que je vis porte ton nom. Merci de m’avoir appris à rêver grand et à rester debout. Joyeuse Saint-Valentin, maman."]},
-  pere:{s:"Ton enfant fier de toi, Bervy Warren",m:[
-    "{n}, papa, tu n’as pas toujours dit « je t’aime », mais tu l’as montré chaque jour par ta force, ton travail et ta présence. Merci pour tout.",
-    "Tu m’as appris à tenir debout, {n}, et à ne jamais abandonner. Mon plus beau modèle, c’est toi. Je suis fier d’être ton enfant.",
-    "{n}, derrière chaque pas que je fais, il y a tes conseils et tes sacrifices silencieux. Merci, papa. Je t’aime."]},
-  fille:{s:"Avec tout mon amour, Bervy Warren",m:[
-    "{n}, ma fille, tu es la plus belle chose qui me soit arrivée. Ton sourire éclaire la maison et ton cœur me remplit de fierté chaque jour.",
-    "Grandis, rêve, ose, {n} : le monde t’appartient. Et quoi qu’il arrive, tu auras toujours un foyer dans mes bras.",
-    "{n}, ma princesse, ma force, ma joie. Joyeuse Saint-Valentin : tu es aimée plus que les étoiles ne sont nombreuses."]},
-  fils:{s:"Avec tout mon amour, Bervy Warren",m:[
-    "{n}, mon fils, tu es ma fierté et mon plus bel espoir. Avance avec courage, je serai toujours derrière toi.",
-    "Chaque jour, {n}, je te vois grandir et mon cœur déborde. Sois fort, sois bon, sois toi-même. Je t’aime.",
-    "{n}, mon garçon, tu es mon plus beau cadeau. Joyeuse Saint-Valentin, que la vie te soit douce."]},
-  frere:{s:"Ton frère , toujours Bervy Warren",m:[
-    "{n}, mon frère, on s’est chamaillés, on a ri, on a grandi ensemble. Ce lien-là est inébranlable. Merci d’être toujours là.",
-    "Il y a des amis qu’on choisit et des frères qu’on a la chance de recevoir. {n}, je ne changerais rien à nous.",
-    "{n}, quoi qu’il arrive, tu as mon dos, mon soutien et mon respect. Je suis fier de toi, mon frère."]},
-  soeur:{s:"Ton frère, toujours, Bervy Warren",m:[
-    "{n}, ma sœur, ma confidente, ma lumière. Tu comprends mes silences et tu embellis mes jours. Merci d’être toi.",
-    "Nos souvenirs sont mon plus beau trésor, {n}. Où que la vie nous mène, je serai toujours là pour toi.",
-    "{n}, tu as un cœur immense et un sourire qui rassure. Joyeuse Saint-Valentin à ma sœur adorée."]},
-  grandparent:{s:"Ton petit-enfant Bervy Warren",m:[
-    "{n}, merci pour ta sagesse, tes histoires et ta tendresse. Tu es la racine de notre famille et notre plus beau trésor.",
-    "Ton amour a traversé les années et il nous protège encore. {n}, avec tout mon respect et toute ma tendresse, joyeuse Saint-Valentin.",
-    "Grâce à toi, {n}, j’ai appris ce que signifient la patience, la foi et l’amour. Je mesure la chance d’être ton petit-enfant."]},
-  ex:{s:"Avec sincérité",m:[
-    "{n}, nos chemins se sont séparés, mais je garde de la gratitude pour ce que nous avons vécu. Je te souhaite sincèrement beaucoup de bonheur.",
-    "Sans rancœur, {n} : merci pour les bons souvenirs et pour tout ce que j’ai appris à tes côtés. Prends soin de toi.",
-    "Joyeuse Saint-Valentin, {n}. Que la vie te réserve de la douceur, de la paix et de belles rencontres."]},
-  ami:{s:"Bervy Warren",m:[
-    "{n}, l’amitié est un amour qui ne demande rien en retour. Merci d’être là dans les rires comme dans les tempêtes.",
-    "Il y a des gens qu’on rencontre et qui deviennent une famille. {n}, tu es de ceux-là. Joyeuse Saint-Valentin, mon pilier.",
-    "{n}, avec toi, les fous rires durent plus longtemps et les soucis pèsent moins. Merci d’être exactement qui tu es."]},
-  collegue:{s:"Avec toute ma sympathie, Bervy Warren",m:[
-    "{n}, merci pour ta bonne humeur, ton aide et ton professionnalisme. Travailler avec toi rend chaque journée plus agréable.",
-    "Un petit mot pour te dire que ton énergie compte pour toute l’équipe, {n}. Joyeuse Saint-Valentin et belle journée !",
-    "{n}, ta gentillesse et ton sérieux font la différence. Merci d’être un collègue sur qui l’on peut compter."]},
-  famille:{s:"Avec toute ma tendresse",m:[
-    "{n}, la famille est le plus beau des foyers, et tu en es un pilier. Merci pour ta présence et ton affection.",
-    "Que cette Saint-Valentin t’apporte autant de joie que tu en donnes autour de toi, {n}. Je t’aime très fort.",
-    "{n}, tu rends notre famille plus chaleureuse et plus unie. Merci d’être là, simplement."]}
-};
-var lienChoisi = "amour", dernier = -1;
+    <script>
+      // Libellés des relations affichés sur les boutons, dans l'ordre
+      var RELATIONS = [
+        ["amour", "Mon amour"],
+        ["copine", "Ma copine"],
+        ["copain", "Mon copain"],
+        ["crush", "Mon secret"],
+        ["mere", "Ma mère"],
+        ["pere", "Mon père"],
+        ["fille", "Ma fille"],
+        ["fils", "Mon fils"],
+        ["frere", "Mon frère"],
+        ["soeur", "Ma sœur"],
+        ["grandparent", "Grand-parent"],
+        ["ex", "Mon ex"],
+        ["ami", "Ami ou amie"],
+        ["collegue", "Collègue"],
+        ["famille", "Famille"],
+      ];
+      // Messages par relation : s = signature, m = liste de messages ({n} devient le prénom)
+      var MESSAGES = {
+        amour: {
+          s: "Avec tout mon amour, Bervy Warren",
+          m: [
+            "{n}, il y a des personnes qui traversent la vie, et il y a toi, qui l’as transformée. Merci d’être ma lumière quand tout s’assombrit et mon sourire quand tout va bien.",
+            "Si l’amour avait un visage, {n}, ce serait le tien. Chaque jour à tes côtés est une promesse tenue, et je t’aimerai encore demain, plus fort qu’aujourd’hui.",
+            "{n}, je ne cherche plus ailleurs : tout ce dont mon cœur rêvait, il l’a trouvé en toi. Tu es ma maison, mon calme et ma plus belle aventure.",
+          ],
+        },
+        copine: {
+          s: "Pour toi, Bervy Warren",
+          m: [
+            "{n}, ma douce, tu fais fleurir les jours les plus gris. Près de toi, je deviens la meilleure version de moi-même. Merci d’être celle que tu es.",
+            "Tes rires sont ma musique préférée, {n}. Aujourd’hui, je veux simplement te dire que tu es précieuse, belle et infiniment aimée.",
+            "{n}, parmi tous les hasards de la vie, tu es le plus beau. Je choisirai toujours ton sourire, ta voix et ta main dans la mienne.",
+          ],
+        },
+        copain: {
+          s: "Pour toi, Bervy Warren",
+          m: [
+            "{n}, mon repère, mon complice, mon plus beau pari. Avec toi, l’avenir fait moins peur et tout devient possible. Je t’aime.",
+            "Merci, {n}, pour ta patience, ta tendresse et ces petits gestes qui disent tout. Tu es la preuve que l’amour se cache dans les détails.",
+            "{n}, si je devais recommencer ma vie, je referais chaque chemin qui m’a mené à toi. Joyeuse Saint-Valentin, mon amour.",
+          ],
+        },
+        crush: {
+          s: "Avec sincérité, Bervy Warren",
+          m: [
+            "{n}, il y a des sentiments qu’on n’ose pas dire, et pourtant ils grandissent en silence. Les tiens font battre mon cœur un peu plus vite.",
+            "Peut-être que le courage, c’est simplement de te l’avouer : {n}, tu comptes pour moi plus que tu ne l’imagines.",
+            "{n}, ton sourire illumine mes journées sans que tu le saches. Si tu le veux, écrivons la suite ensemble, doucement.",
+          ],
+        },
+        mere: {
+          s: "Ton enfant qui t’aime, Bervy Warren",
+          m: [
+            "{n}, maman, ton amour est le premier que j’ai connu et le plus pur. Merci pour tes prières, tes sacrifices et ta douceur. Je t’aime de tout mon cœur.",
+            "Il n’existe pas de mots assez grands pour te dire merci, {n}. Tu as été mon refuge, mon courage et ma plus belle leçon d’amour.",
+            "{n}, chaque réussite que je vis porte ton nom. Merci de m’avoir appris à rêver grand et à rester debout. Joyeuse Saint-Valentin, maman.",
+          ],
+        },
+        pere: {
+          s: "Ton enfant fier de toi, Bervy Warren",
+          m: [
+            "{n}, papa, tu n’as pas toujours dit « je t’aime », mais tu l’as montré chaque jour par ta force, ton travail et ta présence. Merci pour tout.",
+            "Tu m’as appris à tenir debout, {n}, et à ne jamais abandonner. Mon plus beau modèle, c’est toi. Je suis fier d’être ton enfant.",
+            "{n}, derrière chaque pas que je fais, il y a tes conseils et tes sacrifices silencieux. Merci, papa. Je t’aime.",
+          ],
+        },
+        fille: {
+          s: "Avec tout mon amour, Bervy Warren",
+          m: [
+            "{n}, ma fille, tu es la plus belle chose qui me soit arrivée. Ton sourire éclaire la maison et ton cœur me remplit de fierté chaque jour.",
+            "Grandis, rêve, ose, {n} : le monde t’appartient. Et quoi qu’il arrive, tu auras toujours un foyer dans mes bras.",
+            "{n}, ma princesse, ma force, ma joie. Joyeuse Saint-Valentin : tu es aimée plus que les étoiles ne sont nombreuses.",
+          ],
+        },
+        fils: {
+          s: "Avec tout mon amour, Bervy Warren",
+          m: [
+            "{n}, mon fils, tu es ma fierté et mon plus bel espoir. Avance avec courage, je serai toujours derrière toi.",
+            "Chaque jour, {n}, je te vois grandir et mon cœur déborde. Sois fort, sois bon, sois toi-même. Je t’aime.",
+            "{n}, mon garçon, tu es mon plus beau cadeau. Joyeuse Saint-Valentin, que la vie te soit douce.",
+          ],
+        },
+        frere: {
+          s: "Ton frère , toujours Bervy Warren",
+          m: [
+            "{n}, mon frère, on s’est chamaillés, on a ri, on a grandi ensemble. Ce lien-là est inébranlable. Merci d’être toujours là.",
+            "Il y a des amis qu’on choisit et des frères qu’on a la chance de recevoir. {n}, je ne changerais rien à nous.",
+            "{n}, quoi qu’il arrive, tu as mon dos, mon soutien et mon respect. Je suis fier de toi, mon frère.",
+          ],
+        },
+        soeur: {
+          s: "Ton frère, toujours, Bervy Warren",
+          m: [
+            "{n}, ma sœur, ma confidente, ma lumière. Tu comprends mes silences et tu embellis mes jours. Merci d’être toi.",
+            "Nos souvenirs sont mon plus beau trésor, {n}. Où que la vie nous mène, je serai toujours là pour toi.",
+            "{n}, tu as un cœur immense et un sourire qui rassure. Joyeuse Saint-Valentin à ma sœur adorée.",
+          ],
+        },
+        grandparent: {
+          s: "Ton petit-enfant Bervy Warren",
+          m: [
+            "{n}, merci pour ta sagesse, tes histoires et ta tendresse. Tu es la racine de notre famille et notre plus beau trésor.",
+            "Ton amour a traversé les années et il nous protège encore. {n}, avec tout mon respect et toute ma tendresse, joyeuse Saint-Valentin.",
+            "Grâce à toi, {n}, j’ai appris ce que signifient la patience, la foi et l’amour. Je mesure la chance d’être ton petit-enfant.",
+          ],
+        },
+        ex: {
+          s: "Avec sincérité, Bervy Warren",
+          m: [
+            "{n}, nos chemins se sont séparés, mais je garde de la gratitude pour ce que nous avons vécu. Je te souhaite sincèrement beaucoup de bonheur.",
+            "Sans rancœur, {n} : merci pour les bons souvenirs et pour tout ce que j’ai appris à tes côtés. Prends soin de toi.",
+            "Joyeuse Saint-Valentin, {n}. Que la vie te réserve de la douceur, de la paix et de belles rencontres.",
+          ],
+        },
+        ami: {
+          s: "Bervy Warren",
+          m: [
+            "{n}, l’amitié est un amour qui ne demande rien en retour. Merci d’être là dans les rires comme dans les tempêtes.",
+            "Il y a des gens qu’on rencontre et qui deviennent une famille. {n}, tu es de ceux-là. Joyeuse Saint-Valentin, mon pilier.",
+            "{n}, avec toi, les fous rires durent plus longtemps et les soucis pèsent moins. Merci d’être exactement qui tu es.",
+          ],
+        },
+        collegue: {
+          s: "Avec toute ma sympathie, Bervy Warren",
+          m: [
+            "{n}, merci pour ta bonne humeur, ton aide et ton professionnalisme. Travailler avec toi rend chaque journée plus agréable.",
+            "Un petit mot pour te dire que ton énergie compte pour toute l’équipe, {n}. Joyeuse Saint-Valentin et belle journée !",
+            "{n}, ta gentillesse et ton sérieux font la différence. Merci d’être un collègue sur qui l’on peut compter.",
+          ],
+        },
+        famille: {
+          s: "Avec toute ma tendresse, Bervy Warren",
+          m: [
+            "{n}, la famille est le plus beau des foyers, et tu en es un pilier. Merci pour ta présence et ton affection.",
+            "Que cette Saint-Valentin t’apporte autant de joie que tu en donnes autour de toi, {n}. Je t’aime très fort.",
+            "{n}, tu rends notre famille plus chaleureuse et plus unie. Merci d’être là, simplement.",
+          ],
+        },
+      };
+      var lienChoisi = "amour",
+        dernier = -1;
 
-// Construit les boutons de relation
-var zoneChoix = document.getElementById("choix");
-RELATIONS.forEach(function(r){
-  var b = document.createElement("button");
-  b.type = "button"; b.textContent = r[1]; b.dataset.lien = r[0];
-  b.setAttribute("aria-pressed", r[0] === lienChoisi ? "true" : "false");
-  b.addEventListener("click", function(){
-    lienChoisi = r[0];
-    zoneChoix.querySelectorAll("button").forEach(function(x){ x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
-  });
-  zoneChoix.appendChild(b);
-});
+      // Construit les boutons de relation
+      var zoneChoix = document.getElementById("choix");
+      RELATIONS.forEach(function (r) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.textContent = r[1];
+        b.dataset.lien = r[0];
+        b.setAttribute("aria-pressed", r[0] === lienChoisi ? "true" : "false");
+        b.addEventListener("click", function () {
+          lienChoisi = r[0];
+          zoneChoix.querySelectorAll("button").forEach(function (x) {
+            x.setAttribute("aria-pressed", x === b ? "true" : "false");
+          });
+        });
+        zoneChoix.appendChild(b);
+      });
 
-// Première lettre du prénom en majuscule
-function formaterPrenom(t){ t = t.trim(); return t.charAt(0).toUpperCase() + t.slice(1); }
+      // Première lettre du prénom en majuscule
+      function formaterPrenom(t) {
+        t = t.trim();
+        return t.charAt(0).toUpperCase() + t.slice(1);
+      }
 
-// Fait tomber un pétale ou un petit cœur en arrière-plan (formes en SVG)
-function creerPetale(){
-  var ns = "http://www.w3.org/2000/svg", s = document.createElementNS(ns, "svg"), p = document.createElementNS(ns, "path");
-  var t = 12 + Math.random() * 20;
-  s.setAttribute("viewBox", "0 0 24 24"); s.setAttribute("width", t); s.setAttribute("height", t);
-  s.setAttribute("class", "petale" + (Math.random() < .25 ? " or" : ""));
-  p.setAttribute("d", Math.random() < .5 ? "M12 2C8 8 4 11 4 15a8 8 0 0016 0c0-4-4-7-8-13z"
-                                         : "M12 21s-7.500-4.600-9.600-9.300C.9 8.200 2.800 4.500 6.400 4.500c2 0 3.700 1.100 4.600 2.800h2c.9-1.700 2.600-2.800 4.600-2.800 3.600 0 5.500 3.700 4 7.200C19.500 16.400 12 21 12 21z");
-  s.appendChild(p);
-  s.style.left = Math.random() * 100 + "%";
-  s.style.setProperty("--dx", (Math.random() * 160 - 80) + "px");
-  s.style.setProperty("--rot", (Math.random() * 540 - 270) + "deg");
-  var d = 8 + Math.random() * 7;
-  s.style.animationDuration = d + "s";
-  document.getElementById("petales").appendChild(s);
-  setTimeout(function(){ s.remove(); }, d * 1000 + 200);
-}
-setInterval(creerPetale, 600);
+      // Fait tomber un pétale ou un petit cœur en arrière-plan (formes en SVG)
+      function creerPetale() {
+        var ns = "http://www.w3.org/2000/svg",
+          s = document.createElementNS(ns, "svg"),
+          p = document.createElementNS(ns, "path");
+        var t = 12 + Math.random() * 20;
+        s.setAttribute("viewBox", "0 0 24 24");
+        s.setAttribute("width", t);
+        s.setAttribute("height", t);
+        s.setAttribute("class", "petale" + (Math.random() < 0.25 ? " or" : ""));
+        p.setAttribute(
+          "d",
+          Math.random() < 0.5
+            ? "M12 2C8 8 4 11 4 15a8 8 0 0016 0c0-4-4-7-8-13z"
+            : "M12 21s-7.500-4.600-9.600-9.300C.9 8.200 2.800 4.500 6.400 4.500c2 0 3.700 1.100 4.600 2.800h2c.9-1.700 2.600-2.800 4.600-2.800 3.600 0 5.500 3.700 4 7.200C19.500 16.400 12 21 12 21z",
+        );
+        s.appendChild(p);
+        s.style.left = Math.random() * 100 + "%";
+        s.style.setProperty("--dx", Math.random() * 160 - 80 + "px");
+        s.style.setProperty("--rot", Math.random() * 540 - 270 + "deg");
+        var d = 8 + Math.random() * 7;
+        s.style.animationDuration = d + "s";
+        document.getElementById("petales").appendChild(s);
+        setTimeout(
+          function () {
+            s.remove();
+          },
+          d * 1000 + 200,
+        );
+      }
+      setInterval(creerPetale, 600);
 
-// Halo lumineux qui suit le pointeur
-window.addEventListener("pointermove", function(e){
-  document.body.style.setProperty("--x", e.clientX + "px");
-  document.body.style.setProperty("--y", e.clientY + "px");
-});
+      // Halo lumineux qui suit le pointeur
+      window.addEventListener("pointermove", function (e) {
+        document.body.style.setProperty("--x", e.clientX + "px");
+        document.body.style.setProperty("--y", e.clientY + "px");
+      });
 
-// Change de vue avec une transition douce
-function montrer(id){
-  document.querySelectorAll(".vue").forEach(function(v){ v.classList.remove("actif"); });
-  var cible = document.getElementById(id);
-  void cible.offsetWidth;
-  cible.classList.add("actif");
-}
+      // Change de vue avec une transition douce
+      function montrer(id) {
+        document.querySelectorAll(".vue").forEach(function (v) {
+          v.classList.remove("actif");
+        });
+        var cible = document.getElementById(id);
+        void cible.offsetWidth;
+        cible.classList.add("actif");
+      }
 
-// Affiche le prénom puis le message mot par mot
-function afficherMessage(){
-  var champ = document.getElementById("prenom"), prenom = formaterPrenom(champ.value);
-  if(!prenom){ champ.focus(); return; }
-  var data = MESSAGES[lienChoisi], i;
-  do { i = Math.floor(Math.random() * data.m.length); } while(i === dernier && data.m.length > 1);
-  dernier = i;
+      // Affiche le prénom puis le message mot par mot
+      function afficherMessage() {
+        var champ = document.getElementById("prenom"),
+          prenom = formaterPrenom(champ.value);
+        if (!prenom) {
+          champ.focus();
+          return;
+        }
+        var data = MESSAGES[lienChoisi],
+          i;
+        do {
+          i = Math.floor(Math.random() * data.m.length);
+        } while (i === dernier && data.m.length > 1);
+        dernier = i;
 
-  var nom = document.getElementById("nom");
-  nom.textContent = prenom;
-  nom.style.animation = "none"; void nom.offsetWidth; nom.style.animation = "";
-  var zone = document.getElementById("message");
-  zone.textContent = "";
-  var mots = data.m[i].replace(/\{n\}/g, prenom).split(" ");
-  mots.forEach(function(m, k){
-    var s = document.createElement("span");
-    s.className = "mot"; s.textContent = m;
-    s.style.animationDelay = (1.4 + k * 0.11) + "s";
-    zone.appendChild(s);
-  });
-  var sig = document.getElementById("signature");
-  sig.textContent = data.s;
-  sig.style.animation = "none"; void sig.offsetWidth; sig.style.animation = "";
-  sig.style.animationDelay = (1.4 + mots.length * 0.11 + 0.5) + "s";
+        var nom = document.getElementById("nom");
+        nom.textContent = prenom;
+        nom.style.animation = "none";
+        void nom.offsetWidth;
+        nom.style.animation = "";
+        var zone = document.getElementById("message");
+        zone.textContent = "";
+        var mots = data.m[i].replace(/\{n\}/g, prenom).split(" ");
+        mots.forEach(function (m, k) {
+          var s = document.createElement("span");
+          s.className = "mot";
+          s.textContent = m;
+          s.style.animationDelay = 1.4 + k * 0.11 + "s";
+          zone.appendChild(s);
+        });
+        var sig = document.getElementById("signature");
+        sig.textContent = data.s;
+        sig.style.animation = "none";
+        void sig.offsetWidth;
+        sig.style.animation = "";
+        sig.style.animationDelay = 1.4 + mots.length * 0.11 + 0.5 + "s";
 
-  montrer("resultat");
-  // Pluie de pétales pour la révélation
-  for(var c = 0; c < 22; c++){ setTimeout(creerPetale, c * 70); }
-}
+        montrer("resultat");
+        // Pluie de pétales pour la révélation
+        for (var c = 0; c < 22; c++) {
+          setTimeout(creerPetale, c * 70);
+        }
+      }
 
-document.getElementById("reveler").addEventListener("click", afficherMessage);
-document.getElementById("autre").addEventListener("click", afficherMessage);
-document.getElementById("retour").addEventListener("click", function(){ montrer("saisie"); document.getElementById("prenom").focus(); });
-document.getElementById("prenom").addEventListener("keydown", function(e){ if(e.key === "Enter"){ afficherMessage(); } });
+      document
+        .getElementById("reveler")
+        .addEventListener("click", afficherMessage);
+      document
+        .getElementById("autre")
+        .addEventListener("click", afficherMessage);
+      document.getElementById("retour").addEventListener("click", function () {
+        montrer("saisie");
+        document.getElementById("prenom").focus();
+      });
+      document
+        .getElementById("prenom")
+        .addEventListener("keydown", function (e) {
+          if (e.key === "Enter") {
+            afficherMessage();
+          }
+        });
 
-// Partage : feuille de partage du téléphone, sinon copie du lien
-document.getElementById("partager").addEventListener("click", function(){
-  var bouton = this, lien = location.href.split("#")[0];
-  try{
-    if(navigator.share){ navigator.share({title:"Un message rien que pour toi", url:lien}); return; }
-    navigator.clipboard.writeText(lien).then(function(){
-      bouton.textContent = "Lien copié";
-      setTimeout(function(){ bouton.textContent = "Partager ce cadeau"; }, 2000);
-    });
-  }catch(err){ console.error("Partage impossible", err); }
-});
-</script>
-</body>
+      // Partage : feuille de partage du téléphone, sinon copie du lien
+      document
+        .getElementById("partager")
+        .addEventListener("click", function () {
+          var bouton = this,
+            lien = location.href.split("#")[0];
+          try {
+            if (navigator.share) {
+              navigator.share({
+                title: "Un message rien que pour toi",
+                url: lien,
+              });
+              return;
+            }
+            navigator.clipboard.writeText(lien).then(function () {
+              bouton.textContent = "Lien copié";
+              setTimeout(function () {
+                bouton.textContent = "Partager ce cadeau";
+              }, 2000);
+            });
+          } catch (err) {
+            console.error("Partage impossible", err);
+          }
+        });
+    </script>
+  </body>
 </html>
