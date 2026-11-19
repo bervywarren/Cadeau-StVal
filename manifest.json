@@ -1,0 +1,10 @@
+{
+  "name": "Mots de cœur",
+  "short_name": "Mots de cœur",
+  "description": "Crée un message personnalisé qui devient un cadeau numérique",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#1d0715",
+  "theme_color": "#5a1236",
+  "icons": [{"src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}]
+}
