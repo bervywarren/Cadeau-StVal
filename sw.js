@@ -1,8 +1,8 @@
-// Service worker : garde en mémoire la page et ses ressources pour un usage hors connexion
-const VERSION = "mots-de-coeur-v1";
+// Service worker : garde la page en mémoire pour un usage hors connexion
+const VERSION = "mots-de-coeur-v2";
 
 self.addEventListener("install", (e) => {
-  // Pré-chargement de la page d'accueil
+  // Pré-chargement des fichiers principaux
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(["./", "./index.html", "./icon.svg", "./manifest.json"]).catch(() => {})));
   self.skipWaiting();
 });
@@ -15,15 +15,15 @@ self.addEventListener("activate", (e) => {
 
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
-  // Réponse du cache d'abord, mise à jour en arrière-plan quand le réseau est disponible
+  // Réseau d'abord : la dernière version de la page s'affiche toujours quand il y a du réseau.
+  // Le cache ne sert qu'en secours, hors connexion.
   e.respondWith(
-    caches.open(VERSION).then((cache) =>
-      cache.match(e.request).then((enCache) => {
-        const reseau = fetch(e.request)
-          .then((rep) => { cache.put(e.request, rep.clone()); return rep; })
-          .catch(() => enCache);
-        return enCache || reseau;
+    fetch(e.request)
+      .then((rep) => {
+        const copie = rep.clone();
+        caches.open(VERSION).then((c) => c.put(e.request, copie));
+        return rep;
       })
-    )
+      .catch(() => caches.match(e.request))
   );
 });
