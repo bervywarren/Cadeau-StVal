@@ -10,6 +10,15 @@
     <link rel="manifest" href="manifest.json" />
     <link rel="icon" href="icon.svg" />
     <meta name="theme-color" content="#5a1236" />
+    <script>
+      // Si le lien contient un cadeau, on masque tout de suite la page de création
+      if (
+        /[?&]c=[0-9a-f]/.test(location.search) ||
+        /#[0-9a-f]{20,}/.test(location.hash)
+      ) {
+        document.documentElement.className = "lien";
+      }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Fredoka:wght@400;500&family=Jost:wght@300;400;500&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,500;1,500&display=swap"
@@ -772,6 +781,9 @@
           display: block;
           order: -1;
         }
+      }
+      .lien #createur {
+        display: none !important;
       }
     </style>
   </head>
@@ -2762,7 +2774,7 @@
             w,
             "Son prénom",
             etat.prenom,
-            "Par exemple : XXXXXX",
+            "Par exemple : XXXXX",
             function (v) {
               etat.prenom = v;
               if (v.trim() !== etat.prenomOk) {
@@ -3026,8 +3038,8 @@
       }
       function lienDe(d) {
         return (
-          location.href.split("#")[0] +
-          "#" +
+          location.href.split("#")[0].split("?")[0] +
+          "?c=" +
           enHex({
             o: d.o,
             t: d.t,
@@ -3277,7 +3289,9 @@
         bt("Enregistrer en image", function () {
           envoyerImage(d);
         });
-        bt(depuisLien ? "Créer un message pour quelqu’un" : "Retour", fermer);
+        if (!depuisLien) {
+          bt("Retour", fermer);
+        }
       }
       function fermer() {
         clearInterval(cdTimer);
@@ -3292,15 +3306,47 @@
         appliquerTheme();
         render();
       }
-      function lireAdresse() {
+      function codeLien() {
+        var m = location.search.match(/[?&]c=([0-9a-f]+)/);
+        if (m) {
+          return m[1];
+        }
         var h = location.hash.slice(1);
-        if (!/^[0-9a-f]{20,}$/.test(h) || h.length % 2) {
+        return /^[0-9a-f]{20,}$/.test(h) ? h : "";
+      }
+      // Lien incomplet ou abîmé : message clair, sans jamais montrer la page de création
+      function lienInvalide() {
+        $("createur").hidden = true;
+        $("cadeau").hidden = false;
+        $("scene").hidden = true;
+        $("ouverture").hidden = true;
+        appliquerThemeId("libre-elegant", 0);
+        var z = $("accueil");
+        z.hidden = false;
+        z.textContent = "";
+        z.appendChild(mk("div", "titre", "Ce cadeau n’a pas pu s’ouvrir"));
+        z.appendChild(
+          mk(
+            "p",
+            "aide",
+            "Le lien semble incomplet. Demande à la personne de te le renvoyer en entier.",
+          ),
+        );
+      }
+      function lireAdresse() {
+        var h = codeLien();
+        if (!h) {
           return false;
+        }
+        if (h.length % 2) {
+          lienInvalide();
+          return true;
         }
         try {
           var d = deHex(h);
           if (!T[themeId(d.o, d.t)]) {
-            return false;
+            lienInvalide();
+            return true;
           }
           d.r = REL[d.r] ? d.r : "ami";
           d.n = String(d.n).slice(0, 30);
@@ -3313,7 +3359,8 @@
           montrerCadeau(d, true, false);
           return true;
         } catch (e) {
-          return false;
+          lienInvalide();
+          return true;
         }
       }
 
